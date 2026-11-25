@@ -23,7 +23,7 @@ export default function VaultPage() {
   const [category, setCategory] = useState('Todas');
   const [revealed, setRevealed] = useState(() => new Set());
 
-  const [editor, setEditor] = useState(null); // { id|null, form }
+  const [editor, setEditor] = useState(null);
   const [editorError, setEditorError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -152,16 +152,13 @@ export default function VaultPage() {
       <header className="page-header">
         <div>
           <h1>Bóveda confidencial</h1>
-          <p className="muted">Notas cifradas con AES-256-GCM. Solo tú puedes verlas.</p>
+          <p className="page-subtitle">Registros cifrados en reposo con AES-256-GCM y aislamiento por propietario.</p>
         </div>
-        <button type="button" className="btn btn-primary" onClick={openCreate} disabled={atLimit}>
-          <Plus size={16} aria-hidden="true" /> Nueva nota
-        </button>
       </header>
 
-      <div className="toolbar card">
-        <label className="search">
-          <Search size={16} aria-hidden="true" />
+      <div className="panel toolbar">
+        <label className="search-box">
+          <Search size={15} aria-hidden="true" />
           <input
             type="search"
             placeholder="Buscar por título, etiqueta o contenido…"
@@ -171,15 +168,23 @@ export default function VaultPage() {
             aria-label="Buscar notas"
           />
         </label>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Filtrar por categoría">
-          <option value="Todas">Todas</option>
+        <select
+          className="control-select"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          aria-label="Filtrar por categoría"
+        >
+          <option value="Todas">Todas las categorías</option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        <span className={atLimit ? 'usage usage-full' : 'usage'}>
-          {notes.length} / {MAX_NOTES} notas
+        <span className={atLimit ? 'quota-pill full' : 'quota-pill'} title="Cuota de almacenamiento por cuenta">
+          {notes.length} / {MAX_NOTES}
         </span>
+        <button type="button" className="btn btn-primary" onClick={openCreate} disabled={atLimit}>
+          <Plus size={15} aria-hidden="true" /> Nueva nota
+        </button>
       </div>
 
       <Alert kind="error">{error}</Alert>
@@ -189,46 +194,81 @@ export default function VaultPage() {
       {loading ? (
         <p className="muted">Cargando bóveda…</p>
       ) : filtered.length === 0 ? (
-        <div className="card empty">
-          <Lock size={28} aria-hidden="true" />
-          <p>{notes.length === 0 ? 'Aún no tienes notas. Crea la primera.' : 'No hay notas que coincidan con el filtro.'}</p>
+        <div className="panel empty-state">
+          <Lock size={22} aria-hidden="true" />
+          <p>{notes.length === 0 ? 'Aún no tienes notas en tu bóveda. Crea la primera.' : 'No hay notas que coincidan con el filtro.'}</p>
         </div>
       ) : (
         <div className="notes-grid">
           {filtered.map((note) => {
             const visible = revealed.has(note.id);
             return (
-              <article key={note.id} className="card note-card">
-                <div className="note-head">
-                  <h3>{note.title}</h3>
-                  <span className="chip chip-cat">{note.category}</span>
+              <article key={note.id} className="note-card">
+                <div className="note-card-top">
+                  <div className="note-head">
+                    <h3>{note.title}</h3>
+                    <span className="badge">{note.category}</span>
+                  </div>
+                  {note.tags.length > 0 && (
+                    <div className="note-tags">
+                      {note.tags.map((tag) => (
+                        <span key={tag} className="badge badge-tag">#{tag}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="note-tags">
-                  {note.tags.map((tag) => (
-                    <span key={tag} className="chip">#{tag}</span>
-                  ))}
-                </div>
-                <pre className={visible ? 'note-preview shown' : 'note-preview'}>{visible ? note.content : MASK}</pre>
-                <div className="note-meta">
-                  <span className="crypto-badge">
-                    <Lock size={12} aria-hidden="true" /> AES-256-GCM · Key v{note.keyVersion}
-                  </span>
-                  <span className="muted small">Actualizada {formatDate(note.updatedAt)}</span>
-                </div>
-                <div className="note-actions">
-                  <button type="button" className="icon-btn" onClick={() => toggleReveal(note.id)} aria-label={visible ? 'Ocultar contenido' : 'Mostrar contenido'}>
-                    {visible ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                  <button type="button" className="icon-btn" onClick={() => copyContent(note)} aria-label="Copiar contenido">
-                    <Copy size={16} />
-                  </button>
-                  <button type="button" className="icon-btn" onClick={() => openEdit(note)} aria-label="Editar nota">
-                    <Pencil size={16} />
-                  </button>
-                  <button type="button" className="icon-btn icon-danger" onClick={() => setToDelete(note)} aria-label="Eliminar nota">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+
+                <pre className={visible ? 'note-preview shown' : 'note-preview'}>
+                  {visible ? note.content : MASK}
+                </pre>
+
+                <footer className="note-card-foot">
+                  <div className="note-meta">
+                    <span className="key-badge">
+                      <span className="key-badge-dot" aria-hidden="true" />
+                      AES-256-GCM · v{note.keyVersion}
+                    </span>
+                    <span className="note-timestamp">{formatDate(note.updatedAt)}</span>
+                  </div>
+                  <div className="note-actions">
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={() => toggleReveal(note.id)}
+                      aria-label={visible ? 'Ocultar contenido' : 'Mostrar contenido'}
+                      title={visible ? 'Ocultar' : 'Mostrar'}
+                    >
+                      {visible ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={() => copyContent(note)}
+                      aria-label="Copiar contenido"
+                      title="Copiar"
+                    >
+                      <Copy size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      onClick={() => openEdit(note)}
+                      aria-label="Editar nota"
+                      title="Editar"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      className="icon-btn icon-danger"
+                      onClick={() => setToDelete(note)}
+                      aria-label="Eliminar nota"
+                      title="Eliminar"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </footer>
               </article>
             );
           })}
@@ -241,7 +281,13 @@ export default function VaultPage() {
             <Alert kind="error">{editorError}</Alert>
             <label className="field">
               <span>Título</span>
-              <input type="text" required maxLength={150} value={editor.form.title} onChange={(e) => updateForm('title', e.target.value)} />
+              <input
+                type="text"
+                required
+                maxLength={150}
+                value={editor.form.title}
+                onChange={(e) => updateForm('title', e.target.value)}
+              />
             </label>
             <label className="field">
               <span>Categoría</span>
@@ -253,14 +299,27 @@ export default function VaultPage() {
             </label>
             <label className="field">
               <span>Etiquetas (separadas por coma, máx. 10)</span>
-              <input type="text" value={editor.form.tags} onChange={(e) => updateForm('tags', e.target.value)} placeholder="prod, ssh, finanzas-q4" />
+              <input
+                type="text"
+                value={editor.form.tags}
+                onChange={(e) => updateForm('tags', e.target.value)}
+                placeholder="prod, ssh, finanzas-q4"
+              />
             </label>
             <label className="field">
               <span>Contenido secreto ({editor.form.content.length} / 10,000)</span>
-              <textarea required rows={8} maxLength={10000} value={editor.form.content} onChange={(e) => updateForm('content', e.target.value)} />
+              <textarea
+                required
+                rows={8}
+                maxLength={10000}
+                value={editor.form.content}
+                onChange={(e) => updateForm('content', e.target.value)}
+              />
             </label>
             <div className="modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setEditor(null)}>Cancelar</button>
+              <button type="button" className="btn btn-secondary" onClick={() => setEditor(null)}>
+                Cancelar
+              </button>
               <button type="submit" className="btn btn-primary" disabled={saving}>
                 {saving ? 'Cifrando…' : 'Guardar nota'}
               </button>
@@ -275,7 +334,9 @@ export default function VaultPage() {
             ¿Eliminar permanentemente la nota <strong>{toDelete.title}</strong>? Esta acción no se puede deshacer.
           </p>
           <div className="modal-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setToDelete(null)}>Cancelar</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setToDelete(null)}>
+              Cancelar
+            </button>
             <button type="button" className="btn btn-danger" onClick={confirmDelete} disabled={deleting}>
               {deleting ? 'Eliminando…' : 'Eliminar'}
             </button>

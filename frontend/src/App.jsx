@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { LogOut, ShieldCheck, ShieldHalf, UserCircle, Vault } from 'lucide-react';
+import { LogOut, ShieldCheck, ShieldHalf, User, Vault } from 'lucide-react';
 import { useAuth } from './context/AuthContext.jsx';
+import { BrandMark } from './components/ui.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import VaultPage from './pages/VaultPage.jsx';
 import ProfileSecurityPage from './pages/ProfileSecurityPage.jsx';
@@ -13,7 +14,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="splash" role="status">
-        <ShieldCheck size={32} aria-hidden="true" />
+        <ShieldCheck size={24} aria-hidden="true" />
         <p>Verificando sesión segura…</p>
       </div>
     );
@@ -25,53 +26,52 @@ export default function App() {
 
   const currentView = view === 'admin' && !isAdmin ? 'vault' : view;
 
-  const navItem = (id, label, Icon) => (
+  const navTab = (id, label, Icon) => (
     <button
       type="button"
-      className={currentView === id ? 'nav-item active' : 'nav-item'}
+      className={currentView === id ? 'topnav-item active' : 'topnav-item'}
       onClick={() => setView(id)}
       aria-current={currentView === id ? 'page' : undefined}
     >
-      <Icon size={18} aria-hidden="true" />
+      <Icon size={15} aria-hidden="true" />
       <span>{label}</span>
     </button>
   );
 
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand-mark">
-          <ShieldCheck size={24} aria-hidden="true" />
-          <span>SecureVault</span>
-        </div>
-        <nav className="nav" aria-label="Navegación principal">
-          {navItem('vault', 'Bóveda', Vault)}
-          {navItem('profile', 'Perfil y seguridad', UserCircle)}
-          {isAdmin && navItem('admin', 'Centro de seguridad', ShieldHalf)}
-        </nav>
-        <div className="sidebar-foot">
-          <span className="enc-indicator">
-            <span className="enc-dot" aria-hidden="true" /> Cifrado activo
-          </span>
-        </div>
-      </aside>
-
-      <div className="main">
-        <header className="topbar">
-          <div className="topbar-user">
-            <strong>{user.fullName}</strong>
-            <span>{user.companyName}</span>
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="topbar-left">
+            <BrandMark />
+            <nav className="topnav" aria-label="Navegación principal">
+              {navTab('vault', 'Bóveda', Vault)}
+              {navTab('profile', 'Perfil y seguridad', User)}
+              {isAdmin && navTab('admin', 'Centro de seguridad', ShieldHalf)}
+            </nav>
           </div>
-          <button type="button" className="btn btn-topbar" onClick={logout}>
-            <LogOut size={16} aria-hidden="true" /> Cerrar sesión
-          </button>
-        </header>
-        <div className="workspace">
-          {currentView === 'vault' && <VaultPage />}
-          {currentView === 'profile' && <ProfileSecurityPage />}
-          {currentView === 'admin' && <AdminSecurityPage />}
+
+          <div className="topbar-right">
+            <span className="crypto-status" title="Cifrado autenticado activo">
+              <span className="status-dot" aria-hidden="true" />
+              AES-256-GCM · Activo
+            </span>
+            <div className="user-pill">
+              <span className="user-name">{user.fullName}</span>
+              <span className="role-badge">{user.role}</span>
+            </div>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={logout}>
+              <LogOut size={14} aria-hidden="true" /> Cerrar sesión
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+
+      <main className="workspace">
+        {currentView === 'vault' && <VaultPage />}
+        {currentView === 'profile' && <ProfileSecurityPage />}
+        {currentView === 'admin' && <AdminSecurityPage />}
+      </main>
     </div>
   );
 }

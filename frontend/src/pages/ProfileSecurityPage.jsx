@@ -14,7 +14,7 @@ export default function ProfileSecurityPage() {
   const [revealing, setRevealing] = useState(false);
   const timerRef = useRef(null);
 
-  const [setup, setSetup] = useState(null); // { qrDataUrl, manualKey }
+  const [setup, setSetup] = useState(null);
   const [totpCode, setTotpCode] = useState('');
   const [mfaError, setMfaError] = useState('');
   const [mfaNotice, setMfaNotice] = useState('');
@@ -76,91 +76,148 @@ export default function ProfileSecurityPage() {
       <header className="page-header">
         <div>
           <h1>Perfil y seguridad</h1>
-          <p className="muted">Datos de tu cuenta y protección de acceso.</p>
+          <p className="page-subtitle">Configuración de identidad corporativa, datos protegidos y segundo factor.</p>
         </div>
       </header>
 
-      <section className="card section">
-        <h2>Datos de la cuenta</h2>
-        <dl className="kv">
-          <div><dt>Nombre</dt><dd>{user.fullName}</dd></div>
-          <div><dt>Correo</dt><dd>{user.email}</dd></div>
-          <div><dt>Empresa</dt><dd>{user.companyName}</dd></div>
-          <div><dt>Rol</dt><dd>{user.role === 'admin' ? 'Administrador' : 'Usuario'}</dd></div>
-          <div><dt>Miembro desde</dt><dd>{formatDate(user.createdAt)}</dd></div>
+      <section className="panel">
+        <div className="panel-head">
           <div>
-            <dt>Teléfono corporativo</dt>
-            <dd className="phone-row">
-              <Smartphone size={16} aria-hidden="true" />
+            <h2>Datos de la cuenta</h2>
+            <p className="panel-head-sub">Metadatos registrados y acceso auditado a información sensible.</p>
+          </div>
+        </div>
+
+        <div className="settings-list">
+          <div className="setting-row">
+            <span className="setting-label">Nombre completo</span>
+            <span className="setting-value">{user.fullName}</span>
+          </div>
+          <div className="setting-row">
+            <span className="setting-label">Correo electrónico</span>
+            <span className="setting-value mono">{user.email}</span>
+          </div>
+          <div className="setting-row">
+            <span className="setting-label">Empresa</span>
+            <span className="setting-value">{user.companyName}</span>
+          </div>
+          <div className="setting-row">
+            <span className="setting-label">Rol asignado</span>
+            <span className="setting-value">
+              <span className="badge mono">{user.role === 'admin' ? 'admin' : 'user'}</span>
+            </span>
+          </div>
+          <div className="setting-row">
+            <span className="setting-label">Fecha de registro</span>
+            <span className="setting-value mono">{formatDate(user.createdAt)}</span>
+          </div>
+          <div className="setting-row">
+            <span className="setting-label">Teléfono corporativo</span>
+            <div className="setting-value">
+              <Smartphone size={15} aria-hidden="true" />
               <code>{revealedPhone || user.maskedPhone}</code>
               {!revealedPhone && (
-                <button type="button" className="btn btn-ghost btn-sm" onClick={revealPhone} disabled={revealing}>
-                  <Eye size={14} aria-hidden="true" /> {revealing ? 'Solicitando…' : 'Revelar dato auditado'}
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={revealPhone}
+                  disabled={revealing}
+                >
+                  <Eye size={14} aria-hidden="true" />
+                  {revealing ? 'Solicitando…' : 'Revelar dato auditado'}
                 </button>
               )}
-            </dd>
+            </div>
           </div>
-        </dl>
-        {revealedPhone && (
-          <Alert kind="info">
-            Dato revelado y registrado en la bitácora de auditoría. Se ocultará automáticamente en {REVEAL_SECONDS} segundos.
-          </Alert>
+        </div>
+
+        {(revealedPhone || phoneError) && (
+          <div className="panel-body">
+            {revealedPhone && (
+              <Alert kind="info">
+                Dato revelado y registrado en la bitácora de auditoría. Se ocultará automáticamente en {REVEAL_SECONDS} segundos.
+              </Alert>
+            )}
+            <Alert kind="error">{phoneError}</Alert>
+          </div>
         )}
-        <Alert kind="error">{phoneError}</Alert>
       </section>
 
-      <section className="card section">
-        <h2>Autenticación en dos pasos (TOTP)</h2>
-        <div className="mfa-status">
+      <section className="panel">
+        <div className="panel-head">
+          <div>
+            <h2>Autenticación en dos pasos (2FA TOTP)</h2>
+            <p className="panel-head-sub">Protección adicional mediante código temporal de 6 dígitos.</p>
+          </div>
           {user.totpEnabled ? (
-            <span className="chip chip-ok"><ShieldCheck size={14} aria-hidden="true" /> 2FA activado</span>
+            <span className="badge badge-ok">
+              <ShieldCheck size={14} aria-hidden="true" /> Activado
+            </span>
           ) : (
-            <span className="chip chip-warn"><ShieldOff size={14} aria-hidden="true" /> 2FA desactivado</span>
+            <span className="badge badge-warn">
+              <ShieldOff size={14} aria-hidden="true" /> Desactivado
+            </span>
           )}
         </div>
 
-        <Alert kind="success">{mfaNotice}</Alert>
-        <Alert kind="error">{mfaError}</Alert>
+        <div className="panel-body">
+          <Alert kind="success">{mfaNotice}</Alert>
+          <Alert kind="error">{mfaError}</Alert>
 
-        {user.totpEnabled ? (
-          <p className="muted">Tu cuenta solicitará un código de tu aplicación autenticadora en cada inicio de sesión.</p>
-        ) : !setup ? (
-          <>
-            <p className="muted">Protege tu bóveda con un segundo factor usando Google Authenticator, Authy o similar.</p>
-            <button type="button" className="btn btn-primary" onClick={startSetup} disabled={mfaBusy}>
-              {mfaBusy ? 'Generando…' : 'Activar 2FA'}
-            </button>
-          </>
-        ) : (
-          <div className="mfa-setup">
-            <div className="qr-box">
-              <img src={setup.qrDataUrl} alt="Código QR para configurar la aplicación autenticadora" width="200" height="200" />
-            </div>
-            <form onSubmit={verifyMfa} className="form">
-              <p className="muted">Escanea el código QR o ingresa esta clave manualmente:</p>
-              <code className="manual-key">{setup.manualKey}</code>
-              <label className="field">
-                <span>Código de 6 dígitos</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d{6}"
-                  maxLength={6}
-                  required
-                  autoComplete="one-time-code"
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                />
-              </label>
-              <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setSetup(null)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={mfaBusy || totpCode.length !== 6}>
-                  {mfaBusy ? 'Verificando…' : 'Verificar y activar'}
+          {user.totpEnabled ? (
+            <p className="muted">
+              Tu cuenta solicita un código de verificación de tu aplicación autenticadora en cada inicio de sesión.
+            </p>
+          ) : !setup ? (
+            <>
+              <p className="muted">
+                Vincula una aplicación autenticadora (Google Authenticator, Authy o 1Password) para exigir un segundo factor al iniciar sesión.
+              </p>
+              <div>
+                <button type="button" className="btn btn-primary" onClick={startSetup} disabled={mfaBusy}>
+                  {mfaBusy ? 'Generando…' : 'Activar 2FA'}
                 </button>
               </div>
-            </form>
-          </div>
-        )}
+            </>
+          ) : (
+            <div className="mfa-setup">
+              <div className="qr-frame">
+                <img
+                  src={setup.qrDataUrl}
+                  alt="Código QR para configurar la aplicación autenticadora"
+                  width="184"
+                  height="184"
+                />
+              </div>
+              <form onSubmit={verifyMfa} className="form mfa-form">
+                <p className="muted">Escanea el código QR o registra esta clave secreta manualmente:</p>
+                <code className="manual-key">{setup.manualKey}</code>
+                <label className="field">
+                  <span>Código de verificación (6 dígitos)</span>
+                  <input
+                    type="text"
+                    className="mono"
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
+                    required
+                    autoComplete="one-time-code"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  />
+                </label>
+                <div className="modal-actions">
+                  <button type="button" className="btn btn-secondary" onClick={() => setSetup(null)}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={mfaBusy || totpCode.length !== 6}>
+                    {mfaBusy ? 'Verificando…' : 'Verificar y activar'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );

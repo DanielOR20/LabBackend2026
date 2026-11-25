@@ -1,12 +1,23 @@
 import { useEffect } from 'react';
-import { AlertTriangle, CheckCircle2, Info, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, ShieldCheck, X } from 'lucide-react';
+
+export function BrandMark() {
+  return (
+    <span className="brand-mark">
+      <span className="brand-icon" aria-hidden="true">
+        <ShieldCheck size={16} />
+      </span>
+      <span>SecureVault</span>
+    </span>
+  );
+}
 
 export function Alert({ kind = 'error', children }) {
   if (!children) return null;
   const Icon = kind === 'success' ? CheckCircle2 : kind === 'info' ? Info : AlertTriangle;
   return (
     <div className={`alert alert-${kind}`} role={kind === 'error' ? 'alert' : 'status'}>
-      <Icon size={18} aria-hidden="true" />
+      <Icon size={16} aria-hidden="true" />
       <span>{children}</span>
     </div>
   );
@@ -33,7 +44,7 @@ export function Modal({ title, onClose, children, footer, size = 'md' }) {
         <header className="modal-header">
           <h2>{title}</h2>
           <button type="button" className="icon-btn" onClick={onClose} aria-label="Cerrar">
-            <X size={18} />
+            <X size={16} />
           </button>
         </header>
         <div className="modal-body">{children}</div>

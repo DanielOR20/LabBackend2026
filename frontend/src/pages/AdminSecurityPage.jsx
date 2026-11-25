@@ -28,11 +28,11 @@ const EVENT_TYPES = [
   'LOGOUT'
 ];
 
-function Metric({ label, value, tone = 'default' }) {
+function KpiCell({ label, value, tone = '' }) {
   return (
-    <div className={`card metric metric-${tone}`}>
-      <span className="metric-label">{label}</span>
-      <strong className="metric-value">{value}</strong>
+    <div className="kpi-cell">
+      <span className="kpi-label">{label}</span>
+      <strong className={tone ? `kpi-value ${tone}` : 'kpi-value'}>{value}</strong>
     </div>
   );
 }
@@ -83,73 +83,117 @@ function OverviewTab() {
   return (
     <>
       <Alert kind="error">{error}</Alert>
-      <div className="metrics-grid">
-        <Metric label="Usuarios registrados" value={users.total} />
-        <Metric label="Administradores" value={users.admins} />
-        <Metric label="Usuarios con MFA" value={users.mfaEnabled} tone="ok" />
-        <Metric label="Cuentas bloqueadas" value={users.locked} tone={users.locked > 0 ? 'warn' : 'default'} />
-        <Metric label="Notas cifradas" value={vault.totalNotes} />
-        <Metric label="Alertas críticas (24h)" value={sev.critical} tone={sev.critical > 0 ? 'danger' : 'default'} />
-        <Metric label="Warnings (24h)" value={sev.warning} tone={sev.warning > 0 ? 'warn' : 'default'} />
-        <Metric label="Info (24h)" value={sev.info} />
-      </div>
+
+      <section className="kpi-strip" aria-label="Métricas de seguridad">
+        <KpiCell label="Usuarios registrados" value={users.total} />
+        <KpiCell label="Administradores" value={users.admins} />
+        <KpiCell label="Usuarios con MFA" value={users.mfaEnabled} tone="ok" />
+        <KpiCell label="Cuentas bloqueadas" value={users.locked} tone={users.locked > 0 ? 'warn' : ''} />
+        <KpiCell label="Notas cifradas" value={vault.totalNotes} />
+        <KpiCell label="Alertas críticas (24h)" value={sev.critical} tone={sev.critical > 0 ? 'danger' : ''} />
+        <KpiCell label="Warnings (24h)" value={sev.warning} tone={sev.warning > 0 ? 'warn' : ''} />
+        <KpiCell label="Eventos info (24h)" value={sev.info} />
+      </section>
 
       <div className="two-col">
-        <section className="card section">
-          <h2>Distribución por versión de llave</h2>
-          <p className="muted small">Llave activa: <strong>v{vault.activeKeyVersion}</strong></p>
-          <table className="table">
-            <thead>
-              <tr><th>Tipo</th><th>Versión</th><th>Registros</th></tr>
-            </thead>
-            <tbody>
-              {vault.notesByKeyVersion.map((row) => (
-                <tr key={`n-${row.keyVersion}`}>
-                  <td>Notas</td>
-                  <td>v{row.keyVersion}{row.keyVersion === vault.activeKeyVersion ? ' (activa)' : ''}</td>
-                  <td>{row.count}</td>
-                </tr>
-              ))}
-              {vault.phonesByKeyVersion.map((row) => (
-                <tr key={`p-${row.keyVersion}`}>
-                  <td>Teléfonos</td>
-                  <td>v{row.keyVersion}{row.keyVersion === vault.activeKeyVersion ? ' (activa)' : ''}</td>
-                  <td>{row.count}</td>
-                </tr>
-              ))}
-              {vault.notesByKeyVersion.length === 0 && vault.phonesByKeyVersion.length === 0 && (
-                <tr><td colSpan={3} className="muted">Sin registros.</td></tr>
-              )}
-            </tbody>
-          </table>
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <h2>Inventario de llaves criptográficas</h2>
+              <p className="panel-head-sub">
+                Versión activa configurada: <code className="mono">v{vault.activeKeyVersion}</code>
+              </p>
+            </div>
+          </div>
 
-          <div className="rotate-box">
-            <button type="button" className="btn btn-danger" onClick={() => setConfirmRotate(true)}>
-              <KeyRound size={16} aria-hidden="true" /> Rotar llaves de cifrado
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Recurso</th>
+                  <th>Versión de llave</th>
+                  <th>Registros</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vault.notesByKeyVersion.map((row) => (
+                  <tr key={`n-${row.keyVersion}`}>
+                    <td>Notas de bóveda</td>
+                    <td className="mono">
+                      v{row.keyVersion}
+                      {row.keyVersion === vault.activeKeyVersion ? ' (activa)' : ''}
+                    </td>
+                    <td className="mono">{row.count}</td>
+                  </tr>
+                ))}
+                {vault.phonesByKeyVersion.map((row) => (
+                  <tr key={`p-${row.keyVersion}`}>
+                    <td>Teléfonos corporativos</td>
+                    <td className="mono">
+                      v{row.keyVersion}
+                      {row.keyVersion === vault.activeKeyVersion ? ' (activa)' : ''}
+                    </td>
+                    <td className="mono">{row.count}</td>
+                  </tr>
+                ))}
+                {vault.notesByKeyVersion.length === 0 && vault.phonesByKeyVersion.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="muted">Sin registros cifrados.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="key-rotation-bar">
+            <p className="text-xs muted">
+              Re-cifra registros históricos hacia <code className="mono">v{vault.activeKeyVersion}</code> en transacción atómica.
+            </p>
+            <button type="button" className="btn btn-danger-outline btn-sm" onClick={() => setConfirmRotate(true)}>
+              <KeyRound size={14} aria-hidden="true" /> Rotar llaves a v{vault.activeKeyVersion}
             </button>
           </div>
+
           {rotation && (
-            <Alert kind="success">
-              {`${rotation.message} — Notas: ${rotation.notesRotated} · Teléfonos: ${rotation.phonesRotated} · Secretos TOTP: ${rotation.totpSecretsRotated} migrados a la llave v${rotation.activeKeyVersion}.`}
-            </Alert>
+            <div className="panel-body">
+              <Alert kind="success">
+                {`${rotation.message} — Notas: ${rotation.notesRotated} · Teléfonos: ${rotation.phonesRotated} · Secretos TOTP: ${rotation.totpSecretsRotated} migrados a la llave v${rotation.activeKeyVersion}.`}
+              </Alert>
+            </div>
           )}
         </section>
 
-        <section className="card section">
-          <h2>Eventos de seguridad (24h)</h2>
-          <table className="table">
-            <thead>
-              <tr><th>Evento</th><th>Cantidad</th></tr>
-            </thead>
-            <tbody>
-              {securityLast24h.byEventType.map((row) => (
-                <tr key={row.eventType}><td><code>{row.eventType}</code></td><td>{row.count}</td></tr>
-              ))}
-              {securityLast24h.byEventType.length === 0 && (
-                <tr><td colSpan={2} className="muted">Sin eventos recientes.</td></tr>
-              )}
-            </tbody>
-          </table>
+        <section className="panel">
+          <div className="panel-head">
+            <div>
+              <h2>Actividad de seguridad (24h)</h2>
+              <p className="panel-head-sub">Distribución por tipo de evento auditado.</p>
+            </div>
+          </div>
+
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Código de evento</th>
+                  <th>Conteo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {securityLast24h.byEventType.map((row) => (
+                  <tr key={row.eventType}>
+                    <td><code>{row.eventType}</code></td>
+                    <td className="mono">{row.count}</td>
+                  </tr>
+                ))}
+                {securityLast24h.byEventType.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="muted">Sin eventos registrados en las últimas 24 horas.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
 
@@ -157,10 +201,12 @@ function OverviewTab() {
         <Modal title="Confirmar rotación de llaves" size="sm" onClose={() => setConfirmRotate(false)}>
           <p>
             Se re-cifrarán en una transacción atómica todas las notas, teléfonos y secretos TOTP que no usen la llave activa
-            (v{vault.activeKeyVersion}). Asegúrate de que la llave activa esté configurada en el servidor.
+            (<code className="mono">v{vault.activeKeyVersion}</code>). Verifica que la llave activa esté configurada en el servidor.
           </p>
           <div className="modal-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setConfirmRotate(false)}>Cancelar</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setConfirmRotate(false)}>
+              Cancelar
+            </button>
             <button type="button" className="btn btn-danger" onClick={rotate} disabled={rotating}>
               {rotating ? 'Rotando…' : 'Ejecutar rotación'}
             </button>
@@ -229,31 +275,57 @@ function UsersTab() {
   const isLocked = (u) => u.lockedUntil && new Date(u.lockedUntil) > new Date();
 
   return (
-    <section className="card section">
-      <h2>Gestión de usuarios</h2>
-      <Alert kind="error">{error}</Alert>
-      <Alert kind="success">{notice}</Alert>
+    <section className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Gestión de usuarios</h2>
+          <p className="panel-head-sub">Control de roles RBAC, estado MFA y desbloqueo de cuentas.</p>
+        </div>
+      </div>
+
+      {(error || notice) && (
+        <div className="panel-body">
+          <Alert kind="error">{error}</Alert>
+          <Alert kind="success">{notice}</Alert>
+        </div>
+      )}
+
       {loading ? (
-        <p className="muted">Cargando usuarios…</p>
+        <div className="panel-body">
+          <p className="muted">Cargando usuarios…</p>
+        </div>
       ) : (
         <div className="table-wrap">
           <table className="table">
             <thead>
               <tr>
-                <th>Correo</th><th>Empresa</th><th>Teléfono</th><th>MFA</th>
-                <th>Intentos</th><th>Rol</th><th>Estado</th><th>Acciones</th>
+                <th>Correo</th>
+                <th>Empresa</th>
+                <th>Teléfono</th>
+                <th>MFA</th>
+                <th>Intentos</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => (
                 <tr key={u.id}>
-                  <td>{u.email}</td>
+                  <td className="mono">{u.email}</td>
                   <td>{u.companyName}</td>
                   <td><code>{u.maskedPhone}</code></td>
-                  <td>{u.totpEnabled ? <span className="chip chip-ok">Activo</span> : <span className="chip">No</span>}</td>
-                  <td>{u.failedAttempts}</td>
+                  <td>
+                    {u.totpEnabled ? (
+                      <span className="badge badge-ok">Activo</span>
+                    ) : (
+                      <span className="badge">Inactivo</span>
+                    )}
+                  </td>
+                  <td className="mono">{u.failedAttempts}</td>
                   <td>
                     <select
+                      className="control-select mono"
                       value={u.role}
                       disabled={u.id === me?.id || busyId === u.id}
                       onChange={(e) => changeRole(u, e.target.value)}
@@ -263,11 +335,22 @@ function UsersTab() {
                       <option value="admin">admin</option>
                     </select>
                   </td>
-                  <td>{isLocked(u) ? <span className="chip chip-warn">Bloqueada</span> : <span className="chip chip-ok">Activa</span>}</td>
+                  <td>
+                    {isLocked(u) ? (
+                      <span className="badge badge-warn">Bloqueada</span>
+                    ) : (
+                      <span className="badge badge-ok">Activa</span>
+                    )}
+                  </td>
                   <td>
                     {isLocked(u) && (
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => unlock(u)} disabled={busyId === u.id}>
-                        <LockOpen size={14} aria-hidden="true" /> Desbloquear
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => unlock(u)}
+                        disabled={busyId === u.id}
+                      >
+                        <LockOpen size={13} aria-hidden="true" /> Desbloquear
                       </button>
                     )}
                   </td>
@@ -305,52 +388,86 @@ function LogsTab() {
     load();
   }, [load]);
 
+  const severityBadgeClass = (sev) =>
+    sev === 'critical' ? 'badge badge-critical' : sev === 'warning' ? 'badge badge-warn' : 'badge';
+
   return (
-    <section className="card section">
-      <div className="section-head">
-        <h2>Bitácora de auditoría</h2>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
-          <RefreshCw size={14} aria-hidden="true" /> Actualizar
+    <section className="panel">
+      <div className="panel-head">
+        <div>
+          <h2>Bitácora de auditoría</h2>
+          <p className="panel-head-sub">Últimos 100 eventos de seguridad persistidos en PostgreSQL.</p>
+        </div>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={load}>
+          <RefreshCw size={13} aria-hidden="true" /> Actualizar
         </button>
       </div>
-      <div className="filters">
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)} aria-label="Filtrar por severidad">
+
+      <div className="filters-bar">
+        <select
+          className="control-select"
+          value={severity}
+          onChange={(e) => setSeverity(e.target.value)}
+          aria-label="Filtrar por severidad"
+        >
           <option value="">Todas las severidades</option>
           <option value="info">info</option>
           <option value="warning">warning</option>
           <option value="critical">critical</option>
         </select>
-        <select value={eventType} onChange={(e) => setEventType(e.target.value)} aria-label="Filtrar por tipo de evento">
+        <select
+          className="control-select"
+          value={eventType}
+          onChange={(e) => setEventType(e.target.value)}
+          aria-label="Filtrar por tipo de evento"
+        >
           <option value="">Todos los eventos</option>
           {EVENT_TYPES.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
       </div>
-      <Alert kind="error">{error}</Alert>
+
+      {error && (
+        <div className="panel-body">
+          <Alert kind="error">{error}</Alert>
+        </div>
+      )}
+
       {loading ? (
-        <p className="muted">Cargando bitácora…</p>
+        <div className="panel-body">
+          <p className="muted">Cargando bitácora…</p>
+        </div>
       ) : (
         <div className="table-wrap">
           <table className="table">
             <thead>
-              <tr><th>Fecha</th><th>Severidad</th><th>Evento</th><th>Actor</th><th>IP</th><th>Detalles</th></tr>
+              <tr>
+                <th>Fecha</th>
+                <th>Severidad</th>
+                <th>Evento</th>
+                <th>Actor</th>
+                <th>IP</th>
+                <th>Detalles</th>
+              </tr>
             </thead>
             <tbody>
               {logs.map((log) => (
                 <tr key={log.id}>
-                  <td className="nowrap">{formatDate(log.created_at)}</td>
-                  <td><span className={`chip sev-${log.severity}`}>{log.severity}</span></td>
+                  <td className="nowrap mono">{formatDate(log.created_at)}</td>
+                  <td><span className={severityBadgeClass(log.severity)}>{log.severity}</span></td>
                   <td><code>{log.event_type}</code></td>
-                  <td>{log.actor_email || '—'}</td>
-                  <td>{log.ip_address || '—'}</td>
+                  <td className="mono">{log.actor_email || '—'}</td>
+                  <td className="mono">{log.ip_address || '—'}</td>
                   <td>
-                    <pre className="json">{JSON.stringify(log.details ?? {})}</pre>
+                    <pre className="json-inline">{JSON.stringify(log.details ?? {})}</pre>
                   </td>
                 </tr>
               ))}
               {logs.length === 0 && (
-                <tr><td colSpan={6} className="muted">Sin registros para los filtros seleccionados.</td></tr>
+                <tr>
+                  <td colSpan={6} className="muted">Sin registros para los filtros seleccionados.</td>
+                </tr>
               )}
             </tbody>
           </table>
@@ -377,19 +494,37 @@ export default function AdminSecurityPage() {
       <header className="page-header">
         <div>
           <h1>Centro de seguridad</h1>
-          <p className="muted">Métricas, usuarios, auditoría y gestión criptográfica.</p>
+          <p className="page-subtitle">Telemetría operativa, control de acceso y gestión de llaves criptográficas.</p>
         </div>
       </header>
 
-      <div className="tabs tabs-light" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === 'overview'} className={tab === 'overview' ? 'tab active' : 'tab'} onClick={() => setTab('overview')}>
-          <ShieldAlert size={16} aria-hidden="true" /> Resumen
+      <div className="underline-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'overview'}
+          className={tab === 'overview' ? 'underline-tab active' : 'underline-tab'}
+          onClick={() => setTab('overview')}
+        >
+          <ShieldAlert size={15} aria-hidden="true" /> Resumen
         </button>
-        <button type="button" role="tab" aria-selected={tab === 'users'} className={tab === 'users' ? 'tab active' : 'tab'} onClick={() => setTab('users')}>
-          <Users size={16} aria-hidden="true" /> Usuarios
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'users'}
+          className={tab === 'users' ? 'underline-tab active' : 'underline-tab'}
+          onClick={() => setTab('users')}
+        >
+          <Users size={15} aria-hidden="true" /> Usuarios
         </button>
-        <button type="button" role="tab" aria-selected={tab === 'logs'} className={tab === 'logs' ? 'tab active' : 'tab'} onClick={() => setTab('logs')}>
-          <KeyRound size={16} aria-hidden="true" /> Bitácora
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'logs'}
+          className={tab === 'logs' ? 'underline-tab active' : 'underline-tab'}
+          onClick={() => setTab('logs')}
+        >
+          <KeyRound size={15} aria-hidden="true" /> Bitácora
         </button>
       </div>
 

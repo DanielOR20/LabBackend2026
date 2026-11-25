@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { KeyRound, Lock, ShieldCheck, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { api, formatError } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { Alert } from '../components/ui.jsx';
+import { Alert, BrandMark } from '../components/ui.jsx';
 
 const PASSWORD_RULES = [
   { id: 'len', label: 'Mínimo 10 caracteres', test: (v) => v.length >= 10 },
@@ -164,138 +164,245 @@ export default function AuthPage() {
   };
 
   return (
-    <main className="auth-layout">
-      <section className="auth-brand">
-        <div className="brand-mark">
-          <ShieldCheck size={28} aria-hidden="true" />
-          <span>SecureVault</span>
-        </div>
-        <h1>Bóveda corporativa de información confidencial</h1>
-        <ul className="brand-points">
-          <li><Lock size={16} aria-hidden="true" /> Cifrado AES-256-GCM en reposo</li>
-          <li><KeyRound size={16} aria-hidden="true" /> Autenticación con 2FA (TOTP)</li>
-          <li><ShieldCheck size={16} aria-hidden="true" /> Auditoría de seguridad completa</li>
-        </ul>
-      </section>
+    <main className="auth-viewport">
+      <div className="auth-container">
+        <header className="auth-header">
+          <BrandMark />
+          <p className="auth-subtitle">Consola corporativa de información confidencial</p>
+        </header>
 
-      <section className="auth-card card">
-        <div className="tabs" role="tablist">
-          <button type="button" role="tab" aria-selected={mode === 'login'} className={mode === 'login' ? 'tab active' : 'tab'} onClick={() => switchMode('login')}>
-            Iniciar sesión
-          </button>
-          <button type="button" role="tab" aria-selected={mode === 'register'} className={mode === 'register' ? 'tab active' : 'tab'} onClick={() => switchMode('register')}>
-            Crear cuenta
-          </button>
-          <button type="button" role="tab" aria-selected={mode === 'forgot' || mode === 'reset'} className={mode === 'forgot' || mode === 'reset' ? 'tab active' : 'tab'} onClick={() => switchMode('forgot')}>
-            Recuperar
-          </button>
-        </div>
+        <section className="auth-panel">
+          <div className="underline-tabs" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'login'}
+              className={mode === 'login' ? 'underline-tab active' : 'underline-tab'}
+              onClick={() => switchMode('login')}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'register'}
+              className={mode === 'register' ? 'underline-tab active' : 'underline-tab'}
+              onClick={() => switchMode('register')}
+            >
+              Crear cuenta
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mode === 'forgot' || mode === 'reset'}
+              className={mode === 'forgot' || mode === 'reset' ? 'underline-tab active' : 'underline-tab'}
+              onClick={() => switchMode('forgot')}
+            >
+              Recuperar
+            </button>
+          </div>
 
-        <Alert kind="error">{error}</Alert>
-        <Alert kind="success">{success}</Alert>
+          <Alert kind="error">{error}</Alert>
+          <Alert kind="success">{success}</Alert>
 
-        {mode === 'login' && (
-          <form onSubmit={handleLogin} className="form" autoComplete="on">
-            <label className="field">
-              <span>Correo electrónico</span>
-              <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} readOnly={mfaRequired} />
-            </label>
-            <label className="field">
-              <span>Contraseña</span>
-              <input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} readOnly={mfaRequired} />
-            </label>
-            {mfaRequired && (
+          {mode === 'login' && (
+            <form onSubmit={handleLogin} className="form" autoComplete="on">
               <label className="field">
-                <span>Código 2FA (6 dígitos)</span>
+                <span>Correo electrónico</span>
                 <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d{6}"
-                  maxLength={6}
+                  type="email"
                   required
-                  autoFocus
-                  autoComplete="one-time-code"
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  readOnly={mfaRequired}
                 />
               </label>
-            )}
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {busy ? 'Verificando…' : mfaRequired ? 'Verificar y entrar' : 'Entrar'}
-            </button>
-            {mfaRequired && (
-              <button type="button" className="btn btn-ghost" onClick={() => { setMfaRequired(false); setTotpCode(''); setSuccess(''); }}>
-                Cambiar credenciales
+              <label className="field">
+                <span>Contraseña</span>
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  readOnly={mfaRequired}
+                />
+              </label>
+              {mfaRequired && (
+                <label className="field">
+                  <span>Código 2FA (6 dígitos)</span>
+                  <input
+                    type="text"
+                    className="mono"
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
+                    required
+                    autoFocus
+                    autoComplete="one-time-code"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  />
+                </label>
+              )}
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {busy ? 'Verificando…' : mfaRequired ? 'Verificar y entrar' : 'Entrar'}
               </button>
-            )}
-          </form>
-        )}
+              {mfaRequired && (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setMfaRequired(false);
+                    setTotpCode('');
+                    setSuccess('');
+                  }}
+                >
+                  Cambiar credenciales
+                </button>
+              )}
+            </form>
+          )}
 
-        {mode === 'register' && (
-          <form onSubmit={handleRegister} className="form" autoComplete="on">
-            <label className="field">
-              <span>Nombre completo</span>
-              <input type="text" required minLength={2} maxLength={120} autoComplete="name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            </label>
-            <label className="field">
-              <span>Empresa</span>
-              <input type="text" required minLength={2} maxLength={120} autoComplete="organization" value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
-            </label>
-            <label className="field">
-              <span>Correo corporativo</span>
-              <input type="email" required maxLength={255} autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </label>
-            <label className="field">
-              <span>Teléfono corporativo</span>
-              <input type="tel" required minLength={8} maxLength={20} autoComplete="tel" placeholder="+52 55 1234 5678" value={phone} onChange={(e) => setPhone(e.target.value)} />
-            </label>
-            <label className="field">
-              <span>Contraseña</span>
-              <input type="password" required maxLength={128} autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </label>
-            <PasswordStrength value={password} />
-            <button type="submit" className="btn btn-primary" disabled={busy || !isPasswordValid(password)}>
-              <UserPlus size={16} aria-hidden="true" /> {busy ? 'Creando…' : 'Crear cuenta corporativa'}
-            </button>
-          </form>
-        )}
+          {mode === 'register' && (
+            <form onSubmit={handleRegister} className="form" autoComplete="on">
+              <label className="field">
+                <span>Nombre completo</span>
+                <input
+                  type="text"
+                  required
+                  minLength={2}
+                  maxLength={120}
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Empresa</span>
+                <input
+                  type="text"
+                  required
+                  minLength={2}
+                  maxLength={120}
+                  autoComplete="organization"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Correo corporativo</span>
+                <input
+                  type="email"
+                  required
+                  maxLength={255}
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Teléfono corporativo</span>
+                <input
+                  type="tel"
+                  required
+                  minLength={8}
+                  maxLength={20}
+                  autoComplete="tel"
+                  placeholder="+52 55 1234 5678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Contraseña</span>
+                <input
+                  type="password"
+                  required
+                  maxLength={128}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+              <PasswordStrength value={password} />
+              <button type="submit" className="btn btn-primary" disabled={busy || !isPasswordValid(password)}>
+                <UserPlus size={15} aria-hidden="true" /> {busy ? 'Creando…' : 'Crear cuenta corporativa'}
+              </button>
+            </form>
+          )}
 
-        {mode === 'forgot' && (
-          <form onSubmit={handleForgot} className="form">
-            <p className="muted">Ingresa tu correo. Si está registrado, recibirás instrucciones de recuperación.</p>
-            <label className="field">
-              <span>Correo electrónico</span>
-              <input type="email" required autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </label>
-            <button type="submit" className="btn btn-primary" disabled={busy}>
-              {busy ? 'Enviando…' : 'Solicitar recuperación'}
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={() => switchMode('reset')}>
-              Ya tengo un token de recuperación
-            </button>
-          </form>
-        )}
+          {mode === 'forgot' && (
+            <form onSubmit={handleForgot} className="form">
+              <p className="muted">
+                Ingresa tu correo. Si está registrado, recibirás instrucciones de recuperación.
+              </p>
+              <label className="field">
+                <span>Correo electrónico</span>
+                <input
+                  type="email"
+                  required
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+              <button type="submit" className="btn btn-primary" disabled={busy}>
+                {busy ? 'Enviando…' : 'Solicitar recuperación'}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={() => switchMode('reset')}>
+                Ya tengo un token de recuperación
+              </button>
+            </form>
+          )}
 
-        {mode === 'reset' && (
-          <form onSubmit={handleReset} className="form">
-            <label className="field">
-              <span>Token de recuperación</span>
-              <input type="text" required minLength={32} maxLength={256} autoComplete="off" spellCheck={false} value={resetToken} onChange={(e) => setResetToken(e.target.value)} />
-            </label>
-            <label className="field">
-              <span>Nueva contraseña</span>
-              <input type="password" required maxLength={128} autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-            </label>
-            <PasswordStrength value={newPassword} />
-            <button type="submit" className="btn btn-primary" disabled={busy || !isPasswordValid(newPassword)}>
-              {busy ? 'Restableciendo…' : 'Restablecer contraseña'}
-            </button>
-            <button type="button" className="btn btn-ghost" onClick={() => switchMode('forgot')}>
-              Solicitar un nuevo token
-            </button>
-          </form>
-        )}
-      </section>
+          {mode === 'reset' && (
+            <form onSubmit={handleReset} className="form">
+              <label className="field">
+                <span>Token de recuperación</span>
+                <input
+                  type="text"
+                  className="mono"
+                  required
+                  minLength={32}
+                  maxLength={256}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Nueva contraseña</span>
+                <input
+                  type="password"
+                  required
+                  maxLength={128}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </label>
+              <PasswordStrength value={newPassword} />
+              <button type="submit" className="btn btn-primary" disabled={busy || !isPasswordValid(newPassword)}>
+                {busy ? 'Restableciendo…' : 'Restablecer contraseña'}
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={() => switchMode('forgot')}>
+                Solicitar un nuevo token
+              </button>
+            </form>
+          )}
+        </section>
+
+        <footer className="auth-footer-meta">
+          <span>AES-256-GCM</span>
+          <span>·</span>
+          <span>Argon2id</span>
+          <span>·</span>
+          <span>MFA TOTP</span>
+        </footer>
+      </div>
     </main>
   );
 }
