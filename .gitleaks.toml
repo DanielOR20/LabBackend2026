@@ -1,0 +1,21 @@
+title = "SecureVault Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow only dummy placeholders in .env.example, CI test fixtures, and unit tests"
+paths = [
+  '''^backend/\.env\.example$''',
+  '''^frontend/\.env\.example$''',
+  '''^backend/tests/'''
+]
+regexes = [
+  '''replace_with_64_hex_chars''',
+  '''replace_with_32_bytes_base64''',
+  '''0000000000000000000000000000000000000000000000000000000000000000''',
+  '''1111111111111111111111111111111111111111111111111111111111111111''',
+  '''AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=''',
+  '''AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=''',
+  '''\$argon2id\$v=19\$m=19456,t=2,p=1\$\+PGVh08MfFQAlFCpf3R0eA\$jScJGKW\+QUhplKyqNM/v9WmRzNDH/eKKPz2EOyMCv78'''
+]

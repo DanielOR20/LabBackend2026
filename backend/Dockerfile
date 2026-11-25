@@ -16,7 +16,6 @@ ENV NODE_ENV=production
 COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --chown=node:node package.json ./
 COPY --chown=node:node src ./src
-COPY --chown=node:node sql ./sql
 
 USER node
 
