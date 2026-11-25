@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: securevault-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: DB_SSL
+        value: "true"
+      - key: ACTIVE_KEY_VERSION
+        value: "1"
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        sync: false
+      - key: CSRF_SECRET
+        sync: false
+      - key: DATA_ENCRYPTION_KEY_V1
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false

@@ -1,0 +1,28 @@
+{
+  "name": "securevault-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SecureVault hardened Node.js backend",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "seed:admin": "node scripts/seed-admin.js",
+    "pentest": "node scripts/pentest.js"
+  },
+  "dependencies": {
+    "argon2": "^0.45.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "otplib": "^13.6.0",
+    "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.7"
+  }
+}

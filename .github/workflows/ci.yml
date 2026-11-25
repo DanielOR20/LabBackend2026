@@ -1,0 +1,104 @@
+name: SecureVault DevSecOps CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and run Gitleaks v8.21.2
+        run: |
+          mkdir -p /tmp/gitleaks-bin
+          curl -fsSL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp/gitleaks-bin gitleaks
+          chmod +x /tmp/gitleaks-bin/gitleaks
+          /tmp/gitleaks-bin/gitleaks detect --source . --verbose --redact
+
+  backend-security-and-tests:
+    name: Backend Audit & Unit Tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies (clean)
+        run: npm ci
+
+      - name: Audit backend dependencies (high/critical)
+        run: npm audit --audit-level=high
+
+      - name: Run backend security & crypto tests
+        env:
+          NODE_ENV: test
+          PORT: '4000'
+          CORS_ORIGIN: http://localhost:5173
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/securevault_test
+          DB_SSL: 'false'
+          ACTIVE_KEY_VERSION: '1'
+        run: |
+          export JWT_ACCESS_SECRET="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
+          export CSRF_SECRET="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("hex"))')"
+          export DATA_ENCRYPTION_KEY_V1="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("base64"))')"
+          export DATA_ENCRYPTION_KEY_V2="$(node -e 'console.log(require("node:crypto").randomBytes(32).toString("base64"))')"
+          npm test
+
+  frontend-security-and-build:
+    name: Frontend Audit & Production Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies (clean)
+        run: npm ci
+
+      - name: Audit frontend dependencies (high/critical)
+        run: npm audit --audit-level=high
+
+      - name: Build frontend bundle
+        env:
+          VITE_API_BASE_URL: /api
+        run: npm run build
