@@ -168,23 +168,25 @@ export default function VaultPage() {
             aria-label="Buscar notas"
           />
         </label>
-        <select
-          className="control-select"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          aria-label="Filtrar por categoría"
-        >
-          <option value="Todas">Todas las categorías</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <span className={atLimit ? 'quota-pill full' : 'quota-pill'} title="Cuota de almacenamiento por cuenta">
-          {notes.length} / {MAX_NOTES}
-        </span>
-        <button type="button" className="btn btn-primary" onClick={openCreate} disabled={atLimit}>
-          <Plus size={15} aria-hidden="true" /> Nueva nota
-        </button>
+        <div className="toolbar-controls">
+          <select
+            className="control-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            aria-label="Filtrar por categoría"
+          >
+            <option value="Todas">Todas las categorías</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <span className={atLimit ? 'quota-pill full' : 'quota-pill'} title="Cuota de almacenamiento por cuenta">
+            {notes.length} / {MAX_NOTES}
+          </span>
+          <button type="button" className="btn btn-primary" onClick={openCreate} disabled={atLimit}>
+            <Plus size={15} aria-hidden="true" /> Nueva nota
+          </button>
+        </div>
       </div>
 
       <Alert kind="error">{error}</Alert>

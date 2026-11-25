@@ -106,7 +106,7 @@ function OverviewTab() {
             </div>
           </div>
 
-          <div className="table-wrap">
+          <div className="table-responsive">
             <table className="table">
               <thead>
                 <tr>
@@ -171,7 +171,7 @@ function OverviewTab() {
             </div>
           </div>
 
-          <div className="table-wrap">
+          <div className="table-responsive">
             <table className="table">
               <thead>
                 <tr>
@@ -295,7 +295,7 @@ function UsersTab() {
           <p className="muted">Cargando usuarios…</p>
         </div>
       ) : (
-        <div className="table-wrap">
+        <div className="table-responsive">
           <table className="table">
             <thead>
               <tr>
@@ -439,7 +439,7 @@ function LogsTab() {
           <p className="muted">Cargando bitácora…</p>
         </div>
       ) : (
-        <div className="table-wrap">
+        <div className="table-responsive">
           <table className="table">
             <thead>
               <tr>

@@ -1,4 +1,4 @@
-/* SecureVault — Enterprise Swiss Security Console
+/* SecureVault — Enterprise Swiss Security Console (100% Responsive & Fluid)
    Paleta: #F8F9FA fondo · #FFFFFF superficies · #E4E4E7 bordes 1px · #09090B carbón · #059669 activo · #DC2626 crítico */
 :root {
   --bg: #f8f9fa;
@@ -24,7 +24,7 @@
   --warn-border: #fde68a;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --container: 1120px;
+  --container: 1360px;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
 }
@@ -33,12 +33,24 @@
   box-sizing: border-box;
 }
 
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+  margin: 0;
+}
+
 html, body, #root {
-  height: 100%;
+  min-height: 100%;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 body {
-  margin: 0;
   font-family: var(--font-sans);
   background: var(--bg);
   color: var(--ink);
@@ -55,9 +67,21 @@ h1, h2, h3 {
   color: var(--ink);
 }
 
-h1 { font-size: 1.375rem; line-height: 1.25; }
-h2 { font-size: 1rem; line-height: 1.35; }
-h3 { font-size: 0.9375rem; line-height: 1.35; }
+h1 {
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  line-height: 1.22;
+}
+
+h2 {
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+h3 {
+  font-size: 0.9375rem;
+  line-height: 1.35;
+}
+
 p { margin: 0; }
 
 code, .mono {
@@ -69,7 +93,7 @@ code {
   font-size: 0.8125rem;
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  padding: 1px 6px;
+  padding: 2px 6px;
   border-radius: 4px;
   color: var(--ink);
 }
@@ -83,9 +107,10 @@ button, input, select, textarea {
 .text-xs { font-size: 0.75rem; }
 .nowrap { white-space: nowrap; }
 
-/* ---------- Shell & Fixed Top Navigation (56px) ---------- */
+/* ---------- Shell & Adaptive Top Navigation ---------- */
 .app-shell {
-  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -95,27 +120,27 @@ button, input, select, textarea {
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 56px;
+  width: 100%;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
 .topbar-inner {
+  width: 100%;
   max-width: var(--container);
-  height: 100%;
   margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
+  padding-inline: clamp(14px, 3vw, 32px);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  min-height: 60px;
+  gap: 16px;
 }
 
-.topbar-left {
+.topbar-brand {
+  justify-self: start;
   display: flex;
   align-items: center;
-  gap: 28px;
-  height: 100%;
   min-width: 0;
 }
 
@@ -127,7 +152,7 @@ button, input, select, textarea {
   font-size: 0.9375rem;
   letter-spacing: -0.02em;
   color: var(--ink);
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .brand-icon {
@@ -139,19 +164,21 @@ button, input, select, textarea {
   border-radius: var(--radius-sm);
   background: var(--ink);
   color: #ffffff;
+  flex-shrink: 0;
 }
 
-.topnav {
+.topbar-nav {
+  justify-self: center;
   display: flex;
   align-items: stretch;
-  gap: 4px;
-  height: 100%;
-  overflow-x: auto;
+  gap: 6px;
+  height: 60px;
 }
 
 .topnav-item {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
   background: transparent;
   border: 0;
@@ -175,11 +202,16 @@ button, input, select, textarea {
   border-bottom-color: var(--ink);
 }
 
-.topbar-right {
+.label-short {
+  display: none;
+}
+
+.topbar-actions {
+  justify-self: end;
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 10px;
+  min-width: 0;
 }
 
 .crypto-status {
@@ -192,7 +224,9 @@ button, input, select, textarea {
   background: var(--surface-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 4px 9px;
+  padding: 4px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .status-dot {
@@ -200,6 +234,7 @@ button, input, select, textarea {
   height: 7px;
   border-radius: 50%;
   background: var(--emerald);
+  flex-shrink: 0;
 }
 
 .user-pill {
@@ -208,13 +243,14 @@ button, input, select, textarea {
   gap: 8px;
   font-size: 0.8125rem;
   color: var(--ink);
-  padding-left: 8px;
+  padding-left: 10px;
   border-left: 1px solid var(--border);
+  min-width: 0;
 }
 
 .user-name {
   font-weight: 500;
-  max-width: 150px;
+  max-width: 140px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -229,6 +265,7 @@ button, input, select, textarea {
   background: var(--surface-muted);
   border: 1px solid var(--border);
   color: var(--ink-secondary);
+  flex-shrink: 0;
 }
 
 .workspace {
@@ -236,11 +273,13 @@ button, input, select, textarea {
   width: 100%;
   max-width: var(--container);
   margin: 0 auto;
-  padding: 28px 24px 48px;
+  padding: clamp(18px, 3vw, 28px) clamp(14px, 3vw, 32px) 48px;
+  min-width: 0;
 }
 
 .splash {
-  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -253,6 +292,8 @@ button, input, select, textarea {
 
 /* ---------- Page & Panels ---------- */
 .page {
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -262,7 +303,7 @@ button, input, select, textarea {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -273,25 +314,28 @@ button, input, select, textarea {
 }
 
 .panel {
+  width: 100%;
+  min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
 .panel-body {
-  padding: 20px;
+  padding: clamp(14px, 2.5vw, 20px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .panel-head {
-  padding: 16px 20px;
+  padding: 14px clamp(14px, 2.5vw, 20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .panel-head-sub {
@@ -302,9 +346,13 @@ button, input, select, textarea {
 
 .two-col {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: 20px;
   align-items: start;
+}
+
+.two-col > * {
+  min-width: 0;
 }
 
 /* ---------- Buttons & Inputs ---------- */
@@ -313,6 +361,7 @@ button, input, select, textarea {
   align-items: center;
   justify-content: center;
   gap: 7px;
+  min-height: 42px;
   padding: 8px 14px;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
@@ -348,17 +397,6 @@ button, input, select, textarea {
   border-color: var(--border-strong);
 }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--ink-secondary);
-  border-color: transparent;
-}
-
-.btn-ghost:hover:not(:disabled) {
-  background: var(--surface-muted);
-  color: var(--ink);
-}
-
 .btn-danger {
   background: var(--danger);
   color: #ffffff;
@@ -379,7 +417,8 @@ button, input, select, textarea {
 }
 
 .btn-sm {
-  padding: 5px 10px;
+  min-height: 36px;
+  padding: 6px 10px;
   font-size: 0.8125rem;
 }
 
@@ -387,8 +426,8 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -429,6 +468,7 @@ button, input, select, textarea {
 .field textarea,
 .control-select {
   width: 100%;
+  min-height: 42px;
   padding: 8px 11px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -440,6 +480,7 @@ button, input, select, textarea {
 }
 
 .field textarea {
+  min-height: 140px;
   resize: vertical;
   font-family: var(--font-mono);
   font-size: 0.8125rem;
@@ -474,6 +515,7 @@ button, input, select, textarea {
   border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   border: 1px solid;
+  word-break: break-word;
 }
 
 .alert svg {
@@ -499,22 +541,22 @@ button, input, select, textarea {
   color: var(--ink-secondary);
 }
 
-/* ---------- Auth Page (Single Centered Panel + Dot Pattern) ---------- */
+/* ---------- Auth Page (100dvh Centered Panel) ---------- */
 .auth-viewport {
-  min-height: 100%;
+  min-height: 100dvh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 16px;
   background-color: var(--bg);
   background-image: radial-gradient(#d4d4d8 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .auth-container {
-  width: 100%;
-  max-width: 400px;
+  width: min(100%, 420px);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -525,7 +567,7 @@ button, input, select, textarea {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .auth-subtitle {
@@ -534,10 +576,11 @@ button, input, select, textarea {
 }
 
 .auth-panel {
+  width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 24px;
+  padding: clamp(20px, 4vw, 32px);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -546,7 +589,8 @@ button, input, select, textarea {
 .auth-footer-meta {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--ink-muted);
@@ -557,6 +601,7 @@ button, input, select, textarea {
   display: flex;
   border-bottom: 1px solid var(--border);
   gap: 16px;
+  overflow-x: auto;
 }
 
 .underline-tab {
@@ -564,7 +609,8 @@ button, input, select, textarea {
   border: 0;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
-  padding: 8px 2px 10px;
+  min-height: 42px;
+  padding: 8px 2px;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ink-secondary);
@@ -572,6 +618,7 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
   transition: color 0.12s ease, border-color 0.12s ease;
 }
 
@@ -629,8 +676,8 @@ button, input, select, textarea {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2px 12px;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 3px 12px;
   font-size: 0.75rem;
   color: var(--ink-muted);
 }
@@ -643,21 +690,22 @@ button, input, select, textarea {
 /* ---------- Vault Page ---------- */
 .toolbar {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
 }
 
 .search-box {
-  flex: 1;
-  min-width: 220px;
+  flex: 1 1 260px;
+  min-width: 0;
+  min-height: 42px;
   display: flex;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0 10px;
+  padding: 0 11px;
   background: var(--surface);
   color: var(--ink-muted);
 }
@@ -671,13 +719,24 @@ button, input, select, textarea {
   border: 0;
   outline: 0;
   flex: 1;
-  padding: 7px 0;
+  min-width: 0;
+  padding: 8px 0;
   background: transparent;
   font-size: 0.875rem;
   color: var(--ink);
 }
 
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .quota-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.8125rem;
@@ -685,8 +744,9 @@ button, input, select, textarea {
   color: var(--ink-secondary);
   background: var(--surface-muted);
   border: 1px solid var(--border);
-  padding: 6px 10px;
+  padding: 0 11px;
   border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
 .quota-pill.full {
@@ -697,11 +757,12 @@ button, input, select, textarea {
 
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
   gap: 16px;
 }
 
 .note-card {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--surface);
@@ -768,6 +829,7 @@ button, input, select, textarea {
   align-items: center;
   gap: 10px;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .note-meta {
@@ -791,6 +853,7 @@ button, input, select, textarea {
   height: 6px;
   border-radius: 50%;
   background: var(--emerald);
+  flex-shrink: 0;
 }
 
 .note-timestamp {
@@ -855,7 +918,7 @@ button, input, select, textarea {
   color: var(--danger);
 }
 
-/* ---------- Modal ---------- */
+/* ---------- Modal (Fluid dvh) ---------- */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -863,7 +926,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
   z-index: 60;
 }
 
@@ -871,15 +934,16 @@ button, input, select, textarea {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  width: 100%;
-  max-height: 92vh;
-  overflow: auto;
+  width: min(100% - 24px, 520px);
+  max-height: 90dvh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
 
-.modal-md { max-width: 560px; }
-.modal-sm { max-width: 420px; }
+.modal-sm {
+  width: min(100% - 24px, 420px);
+}
 
 .modal-header {
   display: flex;
@@ -890,7 +954,7 @@ button, input, select, textarea {
 }
 
 .modal-body {
-  padding: 20px;
+  padding: clamp(16px, 3vw, 20px);
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -900,10 +964,11 @@ button, input, select, textarea {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-wrap: wrap;
   padding-top: 4px;
 }
 
-/* ---------- Profile & Security (Stacked Settings Rows) ---------- */
+/* ---------- Profile & Security ---------- */
 .settings-list {
   display: flex;
   flex-direction: column;
@@ -911,10 +976,10 @@ button, input, select, textarea {
 
 .setting-row {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
   align-items: center;
   gap: 16px;
-  padding: 14px 20px;
+  padding: 14px clamp(14px, 2.5vw, 20px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -929,10 +994,11 @@ button, input, select, textarea {
 }
 
 .setting-value {
+  min-width: 0;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--ink);
-  word-break: break-word;
+  overflow-wrap: anywhere;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -941,8 +1007,8 @@ button, input, select, textarea {
 
 .mfa-setup {
   display: flex;
+  flex-direction: row;
   gap: 24px;
-  flex-wrap: wrap;
   align-items: flex-start;
   padding-top: 4px;
 }
@@ -952,6 +1018,7 @@ button, input, select, textarea {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background: var(--surface);
+  flex-shrink: 0;
 }
 
 .qr-frame img {
@@ -968,7 +1035,7 @@ button, input, select, textarea {
 
 .mfa-form {
   flex: 1;
-  min-width: 260px;
+  min-width: 0;
 }
 
 /* ---------- Admin Security Console ---------- */
@@ -982,12 +1049,13 @@ button, input, select, textarea {
 }
 
 .kpi-cell {
-  padding: 18px 20px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  min-width: 0;
 }
 
 .kpi-cell:nth-child(4n) {
@@ -1005,7 +1073,7 @@ button, input, select, textarea {
 }
 
 .kpi-value {
-  font-size: 1.75rem;
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -1017,8 +1085,10 @@ button, input, select, textarea {
 .kpi-value.warn { color: var(--warn); }
 .kpi-value.danger { color: var(--danger); }
 
-.table-wrap {
+.table-responsive {
+  width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
@@ -1045,6 +1115,7 @@ button, input, select, textarea {
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
   color: var(--ink);
+  white-space: nowrap;
 }
 
 .table tbody tr:last-child td {
@@ -1057,6 +1128,7 @@ button, input, select, textarea {
 
 .table .control-select {
   min-width: 96px;
+  min-height: 36px;
   padding: 5px 8px;
   font-size: 0.8125rem;
 }
@@ -1064,7 +1136,7 @@ button, input, select, textarea {
 .filters-bar {
   display: flex;
   gap: 10px;
-  padding: 12px 20px;
+  padding: 12px clamp(14px, 2.5vw, 20px);
   border-bottom: 1px solid var(--border);
   background: var(--surface-subtle);
   flex-wrap: wrap;
@@ -1074,24 +1146,53 @@ button, input, select, textarea {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.75rem;
-  white-space: pre-wrap;
-  word-break: break-all;
-  max-width: 340px;
+  white-space: nowrap;
   color: var(--ink-secondary);
 }
 
 .key-rotation-bar {
-  padding: 16px 20px;
+  padding: 14px clamp(14px, 2.5vw, 20px);
   border-top: 1px solid var(--border);
   background: var(--surface-subtle);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
-@media (max-width: 900px) {
+/* ---------- Tablet & Compact Laptop (641px – 1023px) ---------- */
+@media (max-width: 1023px) {
+  .topbar-inner {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 56px 44px;
+    gap: 0 16px;
+    padding-inline: 0;
+  }
+
+  .topbar-brand {
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: clamp(14px, 3vw, 32px);
+  }
+
+  .topbar-actions {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: clamp(14px, 3vw, 32px);
+  }
+
+  .topbar-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: stretch;
+    width: 100%;
+    height: 44px;
+    padding-inline: clamp(14px, 3vw, 32px);
+    border-top: 1px solid var(--border);
+    gap: 12px;
+  }
+
   .kpi-strip {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1101,40 +1202,129 @@ button, input, select, textarea {
   .kpi-cell:nth-last-child(-n + 2) { border-bottom: 0; }
 }
 
-@media (max-width: 720px) {
-  .topbar {
-    height: auto;
+/* ---------- Touch Screens (<= 768px): sin auto-zoom iOS/Android ---------- */
+@media (max-width: 768px) {
+  .field input,
+  .field select,
+  .field textarea,
+  .control-select,
+  .search-box input,
+  .table .control-select {
+    font-size: 16px;
   }
+
+  .btn,
+  .btn-sm {
+    min-height: 42px;
+  }
+
+  .icon-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .search-box {
+    flex: 1 1 100%;
+  }
+
+  .toolbar-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toolbar-controls .control-select {
+    flex: 1 1 150px;
+  }
+
+  .filters-bar .control-select {
+    flex: 1 1 180px;
+    width: 100%;
+  }
+}
+
+/* ---------- Smartphones (<= 640px) ---------- */
+@media (max-width: 640px) {
   .topbar-inner {
-    padding: 8px 16px;
-    flex-wrap: wrap;
+    grid-template-rows: 52px 44px;
+  }
+
+  .topbar-brand {
+    padding-left: 14px;
+  }
+
+  .topbar-actions {
+    padding-right: 14px;
     gap: 8px;
   }
-  .topbar-left {
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .topnav-item {
-    padding: 10px 8px;
-  }
-  .topbar-right {
-    width: 100%;
-    justify-content: space-between;
-    padding-bottom: 6px;
-  }
-  .crypto-status {
+
+  .user-pill {
     display: none;
   }
-  .user-pill {
-    border-left: 0;
-    padding-left: 0;
+
+  .label-full {
+    display: none;
   }
-  .workspace {
-    padding: 20px 16px 36px;
+
+  .label-short {
+    display: inline;
   }
+
+  .topbar-actions .btn {
+    min-height: 34px;
+    padding: 4px 10px;
+    font-size: 0.8125rem;
+  }
+
+  .topbar-nav {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    padding-inline: 0;
+    gap: 0;
+    height: 44px;
+  }
+
+  .topnav-item {
+    min-height: 44px;
+    padding: 0 6px;
+    font-size: 0.8125rem;
+  }
+
   .setting-row {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 6px;
+  }
+
+  .mfa-setup {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mfa-form {
+    width: 100%;
+  }
+
+  .modal-actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* ---------- Ultra-narrow (< 400px) ---------- */
+@media (max-width: 399px) {
+  .kpi-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-cell {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .kpi-cell:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .toolbar-controls .btn {
+    width: 100%;
   }
 }
